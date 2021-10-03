@@ -1,0 +1,22 @@
+{
+    "ignore": [
+        "build"
+    ],
+    "main": "main.js",
+    "name": "SMS Forwarder",
+    "optimization": {
+        "removeOpenCv": true,
+        "unusedResources": true
+    },
+    "packageName": "com.isarvin.smsforwarder",
+    "permissionConfig": {
+        "manifestPermissions": [
+            "android.permission.READ_SMS"
+        ],
+        "requestListOnStartup": [
+            "android.permission.READ_SMS"
+        ]
+    },
+    "versionCode": 1,
+    "versionName": "0.1.0-alpha"
+}

@@ -1,0 +1,11 @@
+## Ignore unnecessary files to avoid pushing them.
+
+# Visual Studio Code
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Others
+.DS_Store

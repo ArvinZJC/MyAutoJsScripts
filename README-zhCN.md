@@ -1,4 +1,4 @@
-# 我的Auto.JS脚本
+# 我的Auto.js脚本
 
 [English](./README.md) | **简体中文**
 
