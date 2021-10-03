@@ -4,7 +4,7 @@
  * @Author: Arvin Zhao
  * @Date: 2021-10-03 15:10:01
  * @Last Editors: Arvin Zhao
- * @LastEditTime: 2021-10-03 17:20:22
+ * @LastEditTime: 2021-10-03 19:07:56
  */
 
 "ui";
@@ -12,6 +12,7 @@
 importClass(android.database.ContentObserver);
 importClass(android.net.Uri);
 
+const BOT_TOKEN = "2005164021:AAFFGEy5aK_L8xGgBl_g-CAzEFCtOq02Du0"; // The corresponding Telegram bot token.
 var smsObserver = null;
 
 /**
@@ -20,7 +21,7 @@ var smsObserver = null;
 function endObserver() {
     if (smsObserver !== null) {
         context.getContentResolver().unregisterContentObserver(smsObserver);
-        log("SMS observer ended.")
+        log("SMS observer ended.");
     } // end if
 } // end function endObserver
 
@@ -29,7 +30,29 @@ function endObserver() {
  * @param {String} msg a string containing the sender and the content of the new SMS message
  */
 function forwardSms(msg) {
-    log("New SMS message forwarded.")
+    var tgUserId = String(ui.tgUserId.getText()).trim()
+    
+    if (tgUserId !== null) {
+        threads.start(function() {
+            try {
+                var r = http.get("https://api.telegram.org/bot" + BOT_TOKEN + "/sendMessage?chat_id=" + tgUserId + "&text=" + msg);
+
+                if (r.statusCode === 200) {
+                    toastLog("New SMS message forwarded to TG.");
+                }
+                else {
+                    log(r);
+                } // end if...else
+            }
+            catch (e) {
+                log("Failed to forward the new SMS message.");
+                log(e);
+            } // end try...catch
+        });
+        
+
+        
+    } // end if
 } // end function forwardSms
 
 /**
@@ -70,7 +93,7 @@ function startObserver() {
     smsObserver = new JavaAdapter(
         ContentObserver,
         {
-            onchange: () => {
+            onChange: () => {
                 var msg = readSms();
 
                 if (msg !== null) {
@@ -88,6 +111,6 @@ function startObserver() {
     log("SMS observer started.")
 } // end function startObserver
 
-ui.layout("res/layout/home.xml");
-ui.emitter.on("create", startObserver);
+ui.layoutFile("res/layout/home.xml");
+ui.run(startObserver); // TODO: check permission and internet connection?
 events.on("exit", endObserver);

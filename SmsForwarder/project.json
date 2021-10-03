@@ -11,9 +11,11 @@
     "packageName": "com.isarvin.smsforwarder",
     "permissionConfig": {
         "manifestPermissions": [
+            "android.permission.INTERNET",
             "android.permission.READ_SMS"
         ],
         "requestListOnStartup": [
+            "android.permission.INTERNET",
             "android.permission.READ_SMS"
         ]
     },
