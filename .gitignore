@@ -8,4 +8,5 @@
 *.code-workspace
 
 # Others
+config.json
 .DS_Store
