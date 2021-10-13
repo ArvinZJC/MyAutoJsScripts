@@ -1,24 +1,32 @@
 {
+    "icon": "res/images/icon.png",
     "ignore": [
         "build"
     ],
+    "launchConfig": {
+        "splashIcon": "res/images/icon.png",
+        "splashText": "Your SMS forwarder!"
+    },
     "main": "main.js",
     "name": "SMS Forwarder",
     "optimization": {
-        "removeOpenCv": true,
-        "unusedResources": true
+        "removeOpenCv": true
     },
     "packageName": "com.isarvin.smsforwarder",
     "permissionConfig": {
         "manifestPermissions": [
+            "android.permission.FOREGROUND_SERVICE",
             "android.permission.INTERNET",
-            "android.permission.READ_SMS"
+            "android.permission.READ_SMS",
+            "android.permission.SYSTEM_ALERT_WINDOW"
         ],
         "requestListOnStartup": [
+            "android.permission.FOREGROUND_SERVICE",
             "android.permission.INTERNET",
-            "android.permission.READ_SMS"
+            "android.permission.READ_SMS",
+            "android.permission.SYSTEM_ALERT_WINDOW"
         ]
     },
-    "versionCode": 1,
-    "versionName": "0.1.0-alpha"
+    "versionCode": 2,
+    "versionName": "1.0.0-beta"
 }

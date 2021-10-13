@@ -1,4 +1,17 @@
-<vertical>
-    <text>SMS Forwarder 0.1.0-alpha</text>
-    <input hint="TG user ID" id="tgUserId"/>
-</vertical>
+<frame>
+    <vertical>
+        <appbar>
+            <toolbar id="toolbarApp" title="SMS Forwarder" />
+        </appbar>
+        <ScrollView>
+            <vertical marginBottom="16" marginLeft="16" marginRight="16" marginTop="96">
+                <text textSize="16sp" textStyle="bold">ATTENTION ❗</text>
+                <text marginTop="8" text="1. Please give the app at least the following permissions to make it work fine: reading SMS, disabling battery optimisation, enabling auto startup, allow running in the background, and adding to the whitelist if applicable." />
+                <text text="2. Please ensure the network connectivity." />
+                <text autoLink="web" id="txtTg" />
+                <button id="btnLog" marginTop="16" visibility="gone" />
+            </vertical>
+        </ScrollView>
+    </vertical>
+    <fab h="auto" id="fabSettings" layout_gravity="bottom|right" margin="16" src="@drawable/ic_settings_black_48dp" tint="#FFFFFF" w="auto" />
+</frame>
