@@ -4,7 +4,7 @@
  * @Author: Arvin Zhao
  * @Date: 2021-10-03 15:10:01
  * @Last Editors: Arvin Zhao
- * @LastEditTime: 2021-10-21 19:11:10
+ * @LastEditTime: 2021-10-21 19:37:16
  */
 
 "ui"; // Enable the UI mode of Auto.js Pro.
@@ -32,7 +32,7 @@ var smsObserver = null;
  * @returns the date and time prefix.
  */
 function addTimePrefix() {
-    var datetime = new Date()
+    var datetime = new Date();
     return datetime.getFullYear() + "/" +
         ("0" + (datetime.getMonth() + 1)).slice(-2) + "/" +
         ("0" + datetime.getDate()).slice(-2) + " " +
@@ -204,7 +204,7 @@ function readSms() {
  */
 function showFullLogs() {
     if (ui.btnObserver.getText() === END_OBSERVER) {
-        confirm("The SMS observer must be ended before showing full logs. Are you sure of ending the server?").then(yes => {
+        confirm("The SMS observer must be ended before showing full logs. Are you sure of ending the server?").then((yes) => {
             if (yes) {
                 storage.put(OBSERVER_ON, false);
                 ui.btnObserver.setText(START_OBSERVER);
