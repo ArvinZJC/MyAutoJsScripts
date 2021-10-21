@@ -1,10 +1,13 @@
 {
     "icon": "res/images/icon.png",
     "ignore": [
-        "build"
+        "banner.png",
+        "build",
+        "README-zhCN.md",
+        "README.md"
     ],
     "launchConfig": {
-        "splashIcon": "res/images/icon.png",
+        "splashIcon": "res/images/splashIcon.png",
         "splashText": "Your SMS forwarder!"
     },
     "main": "main.js",
@@ -27,6 +30,6 @@
             "android.permission.SYSTEM_ALERT_WINDOW"
         ]
     },
-    "versionCode": 2,
-    "versionName": "1.0.0-beta"
+    "versionCode": 3,
+    "versionName": "1.9.0"
 }

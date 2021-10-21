@@ -1,10 +1,10 @@
 /*
  * @Description: the core of SMS Forwarder
- * @Version: 1.1.0.20211013
+ * @Version: 1.5.0.20211021
  * @Author: Arvin Zhao
  * @Date: 2021-10-03 15:10:01
  * @Last Editors: Arvin Zhao
- * @LastEditTime: 2021-10-13 22:42:59
+ * @LastEditTime: 2021-10-21 19:11:10
  */
 
 "ui"; // Enable the UI mode of Auto.js Pro.
@@ -12,26 +12,46 @@
 importClass(android.content.ContentValues);
 importClass(android.database.ContentObserver);
 importClass(android.net.Uri);
+importClass(android.os.Process);
 
 const CONFIG = require("./config.json");
-const GONE = 8
-const HIDE_LOGS = "Hide logs"
-const SHOW_LOGS = "Show logs"
-const VISIBLE = 0
-var storage = storages.create("ArvinZJC:SmsForwarder")
+const END_OBSERVER = "End observer";
+const GONE = 8;
+const HIDE_LOGS = "Hide log console";
+const IS_DEV = "isDev"; // The key of the storage value indicating if the dev mode is enabled.
+const OBSERVER_ON = "observerOn"; // The key of the storage value indicating if the SMS observer is on (for reference).
+const SHOW_LOGS = "Show log console";
+const START_OBSERVER = "Start observer";
+const TG_USER_ID = "tgUserId"; // The key of the storage value containing the TG user ID.
+const VISIBLE = 0;
+var storage = storages.create("ArvinZJC:SmsForwarder");
 var smsObserver = null;
+
+/**
+ * Add the date and time to the log message.
+ * @returns the date and time prefix.
+ */
+function addTimePrefix() {
+    var datetime = new Date()
+    return datetime.getFullYear() + "/" +
+        ("0" + (datetime.getMonth() + 1)).slice(-2) + "/" +
+        ("0" + datetime.getDate()).slice(-2) + " " +
+        ("0" + datetime.getHours()).slice(-2) + ":" +
+        ("0" + datetime.getMinutes()).slice(-2) + ":" +
+        ("0" + datetime.getSeconds()).slice(-2) + " - ";
+} // end function addTimePrefix
 
 /**
  * Show and change settings if applicable.
  */
 function changeSettings() {
-    var tgUserId = storage.get("tgUserId");
-    rawInput("Enter your Telegram user ID", tgUserId).then(input => {
-        input = input.trim()
+    var tgUserId = storage.get(TG_USER_ID);
+    rawInput("Enter your Telegram user ID", tgUserId).then((input) => {
+        input = input.trim();
 
         if (tgUserId !== input) {
-            storage.put("tgUserId", input);
-            log("TG user ID configured.")
+            storage.put(TG_USER_ID, input);
+            console.log(addTimePrefix() + "TG user ID configured.");
         } // end if
     });
 } // end function changeSettings
@@ -40,10 +60,20 @@ function changeSettings() {
  * End the SMS observer.
  */
 function endObserver() {
-    if (smsObserver !== null) {
+    if (smsObserver === null) {
+        console.warn(addTimePrefix() + "Failed to get the SMS observer. Perhaps the script is ended before ending the observer manually.");
+        toast("Please force stop the app to ensure ending the observer.");
+        console.log(addTimePrefix() + "Start to stop the app to try to reset the SMS observer.");
+        Process.killProcess(Process.myPid());
+    }
+    else {
         context.getContentResolver().unregisterContentObserver(smsObserver);
-        log("SMS observer ended.");
-    } // end if
+
+        var log = "SMS observer ended.";
+
+        toast(log);
+        console.log(addTimePrefix() + log);
+    } // end if...else
 } // end function endObserver
 
 /**
@@ -51,11 +81,11 @@ function endObserver() {
  * @param {String} msg a string containing the sender and the content of the new SMS message
  */
 function forwardSms(msg) {
-    if (storage.contains("tgUserId")) {
-        var tgUserId = storage.get("tgUserId");
+    if (storage.contains(TG_USER_ID)) {
+        var tgUserId = storage.get(TG_USER_ID);
 
         if (tgUserId === "") {
-            log("Invalid TG user ID.")
+            console.warn(addTimePrefix() + "Failed to forward the new SMS message. Invalid TG user ID.");
         }
         else {
             threads.start(function() {
@@ -63,23 +93,80 @@ function forwardSms(msg) {
                     var r = http.get("https://api.telegram.org/bot" + CONFIG.tgBotToken + "/sendMessage?chat_id=" + tgUserId + "&parse_mode=HTML&text=" + msg);
     
                     if (r.statusCode === 200) {
-                        toastLog("New SMS message forwarded to TG.");
+                        var log = "New SMS message forwarded to TG.";
+
+                        toast(log);
+                        console.log(addTimePrefix() + log);
                     }
                     else {
-                        log(r);
+                        console.warn(addTimePrefix() + r);
                     } // end if...else
                 }
-                catch (e) {
-                    log("Failed to forward the new SMS message.");
-                    log(e);
+                catch(e) {
+                    console.warn(addTimePrefix() + "Failed to forward the new SMS message.");
+                    console.error(e);
                 } // end try...catch
             });
         } // end if...else
     }
     else {
-        log("No TG user ID configured.")
+        console.warn(addTimePrefix() + "No TG user ID configured.");
     } // end if...else
 } // end function forwardSms
+
+/**
+ * Show/Hide the dev mode area.
+ */
+ function manageDev() {
+    if (ui.verticalDev.getVisibility() === GONE) {
+        storage.put(IS_DEV, true);
+        ui.verticalDev.setVisibility(VISIBLE);
+        toast("Dev mode enabled.");
+    }
+    else {
+        storage.put(IS_DEV, false);
+        ui.verticalDev.setVisibility(GONE);
+        toast("Dev mode disabled.");
+    } // end if...else
+} // end function manageDev
+
+/**
+ * Show/Hide the log console.
+ */
+ function manageLogConsole() {
+    if (!$floaty.checkPermission()) {
+        console.warn(addTimePrefix() + "Failed to show a floating window due to no permission. Ask for the permission.");
+        toast("Please allow displaying over other apps.");
+        $floaty.requestPermission();
+        exit();
+    }
+    else {
+        if (ui.btnLog.getText() === SHOW_LOGS) {
+            console.show();
+            ui.btnLog.setText(HIDE_LOGS);
+        }
+        else {
+            console.hide();
+            ui.btnLog.setText(SHOW_LOGS);
+        } // end if...else
+    } // end if...else
+} // end function manageLogConsole
+
+/**
+ * Start/End the SMS observer.
+ */
+function manageObserver() {
+    if (ui.btnObserver.getText() === START_OBSERVER) {
+        storage.put(OBSERVER_ON, true);
+        ui.btnObserver.setText(END_OBSERVER);
+        startObserver();
+    }
+    else {
+        storage.put(OBSERVER_ON, false);
+        ui.btnObserver.setText(START_OBSERVER);
+        endObserver();
+    } // end if...else
+} // end function manageObserver
 
 /**
  * Read the new SMS message.
@@ -104,7 +191,7 @@ function readSms() {
         );
         
         cursor.close();
-        log("New SMS message read.");
+        console.log(addTimePrefix() + "New SMS message read.");
         return msg;
     }
     else {
@@ -113,71 +200,55 @@ function readSms() {
 } // end function readSms
 
 /**
- * Show the button log for showing/hiding logs accordingly.
+ * Show full logs.
  */
-function showBtnLog() {
-    if (ui.btnLog.getVisibility() === GONE) {
-        ui.btnLog.setVisibility(VISIBLE);
-        toast("Dev mode enabled.");
+function showFullLogs() {
+    if (ui.btnObserver.getText() === END_OBSERVER) {
+        confirm("The SMS observer must be ended before showing full logs. Are you sure of ending the server?").then(yes => {
+            if (yes) {
+                storage.put(OBSERVER_ON, false);
+                ui.btnObserver.setText(START_OBSERVER);
+                endObserver();
+                app.startActivity("console");
+            } // end if
+        });
     }
     else {
-        ui.btnLog.setVisibility(GONE);
-        toast("Dev mode disabled.");
+        app.startActivity("console");
     } // end if...else
-} // end function showBtnLog
-
-/**
- * Show logs.
- */
-function showLogs() {
-    if (!$floaty.checkPermission()) {
-        log("Failed to show a floating window due to no permission. Ask for the permission.");
-        $floaty.requestPermission();
-        exit();
-    }
-    else {
-        if (ui.btnLog.getText() === SHOW_LOGS) {
-            console.show();
-            ui.btnLog.setText(HIDE_LOGS);
-        }
-        else {
-            console.hide();
-            ui.btnLog.setText(SHOW_LOGS);
-        } // end if...else
-    } // end if...else
-} // end function showLogs
+} // end showFullLogs
 
 /**
  * Start the SMS observer.
  */
 function startObserver() {
     if (!$power_manager.isIgnoringBatteryOptimizations()) {
-        log("Battery optimisation enabled. Ask for disabling it.");
+        console.warn(addTimePrefix() + "Battery optimisation enabled. Ask for disabling it.");
         toast("Please disable the battery optimisation on the app to ensure the service.");
         $power_manager.requestIgnoreBatteryOptimizations();
     } // end if
-    
+
     smsObserver = new JavaAdapter(
         ContentObserver,
         {
-            // It is expected to only react to SMS data changes from [content://sms/raw] (e.g., [content://sms/101]).
             onChange: (_, uri) => {
                 uri = uri.toString();
-                log("SMS data changes detected from URI: " + uri);
+                console.log(addTimePrefix() + "SMS data changes detected from URI: " + uri);
 
-                // Avoid repeated reaction to the SMS data changes. "[]" is necessary.
-                if (uri === "[content://sms]" || uri === "[content://sms/inbox]") {
-                    return;
+                // It is expected to only react to SMS data changes from [content://sms/<num>] (e.g., [content://sms/1]).
+                if (/^\[content:\/\/sms\/\d+\]$/.test(uri)) {
+                    var msg = readSms();
+
+                    if (msg === null) {
+                        console.warn(addTimePrefix() + "Failed to start to forward the new SMS message. Null message.");
+                    }
+                    else if (!CONFIG.hasOwnProperty("tgBotToken")) {
+                        console.warn(addTimePrefix() + "Failed to start to forward the new SMS message. Unconfigured TG bot token.");
+                    }
+                    else {
+                        forwardSms(msg);
+                    } // end nested if...else
                 } // end if
-                
-                var msg = readSms();
-
-                if (msg !== null && CONFIG.hasOwnProperty("tgBotToken")) {
-                    forwardSms(msg);
-                }
-                else {
-                    log("Failed to start to forward the new SMS message. Null message or unconfigured TG bot token.")
-                } // end if...else
             }
         },
         new android.os.Handler()
@@ -187,17 +258,47 @@ function startObserver() {
         true,
         smsObserver
     );
-    log("SMS observer started.");
+
+    var log = "SMS observer started.";
+
+    toast(log);
+    console.log(addTimePrefix() + log);
 } // end function startObserver
 
 $settings.setEnabled("foreground_service", true); // Enable the foreground service to keep the app alive.
-
+$settings.setEnabled("stop_all_on_volume_up", false); // Disable stopping all the scripts on pressing the volume up button.
 ui.layoutFile("res/layout/home.xml");
-ui.toolbarApp.on("long_click", showBtnLog);
-ui.txtTg.setText("3. Please add the Telegram (TG) bot named \"" + CONFIG.tgBotName + "\" (" + CONFIG.tgBotLink + "). You should also click the gear button at the bottom to enter your TG user ID to enable TG message forwarding. You can search on the web for the way to get your user ID.")
-ui.btnLog.setText(SHOW_LOGS);
-ui.btnLog.on("click", showLogs);
-ui.fabSettings.on("click", changeSettings);
-ui.run(startObserver);
 
-events.on("exit", endObserver);
+if (storage.contains(OBSERVER_ON)) {
+    if (storage.get(OBSERVER_ON)) {
+        ui.btnObserver.setText(END_OBSERVER);
+    }
+    else {
+        ui.btnObserver.setText(START_OBSERVER);
+    } // end if...else
+}
+else {
+    storage.put(OBSERVER_ON, false);
+    ui.btnObserver.setText(START_OBSERVER);
+} // end if...else
+
+if (storage.contains(IS_DEV)) {
+    if (storage.get(IS_DEV)) {
+        ui.verticalDev.setVisibility(VISIBLE);
+    }
+    else {
+        ui.verticalDev.setVisibility(GONE);
+    } // end if...else
+}
+else {
+    storage.put(IS_DEV, false);
+    ui.verticalDev.setVisibility(GONE);
+} // end if...else
+
+ui.toolbarApp.on("long_click", manageDev);
+ui.txtTg.setText("2. Please start the Telegram (TG) bot named \"" + CONFIG.tgBotName + "\" (" + CONFIG.tgBotLink + ") for your TG account. You should also click the gear button at the bottom to enter your TG user ID to enable message forwarding. You can search on the web for the way to get the ID.");
+ui.btnObserver.on("click", manageObserver);
+ui.btnLog.setText(SHOW_LOGS);
+ui.btnLog.on("click", manageLogConsole);
+ui.btnFullLogs.on("click", showFullLogs);
+ui.fabSettings.on("click", changeSettings);

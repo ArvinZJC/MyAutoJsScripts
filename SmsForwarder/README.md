@@ -21,3 +21,5 @@ I have got an iPhone using dual SIM with an eSIM. The problem is that I own 2 SI
         "tgBotToken": "<your TG bot token>"
     }
     ```
+
+4. You could long press the tool bar (the green area at the top) to enable/disable the dev mode. When you want to report an issue, **please try to attach relevant logs by enabling the dev mode, showing logs, and copying text.**
