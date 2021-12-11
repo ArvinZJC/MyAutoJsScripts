@@ -1,21 +1,21 @@
 <frame>
-    <vertical>
-        <appbar>
-            <toolbar id="toolbarApp" title="SMS Forwarder" />
-        </appbar>
-        <ScrollView>
-            <vertical marginBottom="16" marginLeft="16" marginRight="16" marginTop="32">
-                <text textSize="16sp" textStyle="bold">ATTENTION ❗</text>
-                <text marginTop="8" text="1. Please do at least the following to make it work fine: granting the SMS permission, disabling battery optimisation, enabling auto startup, allowing running in the background, adding to any whitelist if applicable, and keeping a network connection." />
-                <text autoLink="web" id="txtTg" />
-                <text text="3. Please start/end the SMS observer manually. Please NOTE that the button for ending the observer is to ensure no repeated observer. Hence, when it is shown, it does not mean that the observer must be still alive. In this case, you may end the observer and restart the app." />
-                <button id="btnObserver" marginTop="8" />
-                <vertical id="verticalDev" marginTop="16">
-                    <button id="btnLog" />
-                    <button id="btnFullLogs" marginTop="8" text="Show full logs" />
-                </vertical>
-            </vertical>
-        </ScrollView>
-    </vertical>
-    <fab h="auto" id="fabSettings" layout_gravity="bottom|right" margin="16" src="@drawable/ic_settings_black_48dp" tint="#FFFFFF" w="auto" />
+  <vertical>
+    <appbar>
+      <toolbar id="toolbarApp" title="SMS Forwarder" />
+    </appbar>
+    <ScrollView>
+      <vertical marginBottom="16" marginLeft="16" marginRight="16" marginTop="32">
+        <text textSize="16sp" textStyle="bold">ATTENTION ❗</text>
+        <text marginTop="8" text="1. Please do at least the following to make it work fine: granting the SMS permission, disabling battery optimisation, enabling auto startup, allowing running in the background, adding to any whitelist if applicable, and keeping a network connection." />
+        <text autoLink="web" id="txtTg" />
+        <text text="3. Please start/end the SMS observer manually. Please NOTE that the button for ending the observer is to ensure no repeated observer. Hence, when it is shown, it does not mean that the observer must be still alive. In this case, you may end the observer and restart the app." />
+        <button id="btnObserver" marginTop="8" />
+        <vertical id="verticalDev" marginTop="16">
+          <button id="btnLog" />
+          <button id="btnFullLogs" marginTop="8" text="Show full logs" />
+        </vertical>
+      </vertical>
+    </ScrollView>
+  </vertical>
+  <fab h="auto" id="fabSettings" layout_gravity="bottom|right" margin="16" src="@drawable/ic_settings_black_48dp" tint="#FFFFFF" w="auto" />
 </frame>
